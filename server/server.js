@@ -9,13 +9,36 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-io.on('connection', (socket) => {
-  console.log('New user connected');
+// for chat app:
 
-  socket.on('disconnect', () => {
-    console.log('User was disconnected');
+io.on('connection', (socket) => {
+  console.log('New user connected.');
+
+  socket.emit('newMessage', {
+    from: 'Andrew@example.com',
+    text: 'Hey, I meet you at 6:00',
+    createdAt: 123
+  });
+
+  socket.on('createMessage', (message) => {
+    console.log('Message:', message);
   });
 });
+
+// for email app:
+
+// io.on('connection', (socket) => {
+//   console.log('New user connected')
+
+//   socket.emit('newEmail', {
+//     from: 'mike@example.com',
+//     text: 'hey, what is going on?',
+//     createdAt: 123
+//   })
+//   socket.on('disconnect', () => {
+//     console.log('User was disconnected')
+//   })
+// })
 
 app.use(express.static(publicPath));
 const port = process.env.PORT || 3000;
