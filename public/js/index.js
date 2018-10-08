@@ -6,10 +6,16 @@ socket.on('newMessage', (message) => {
   console.log('Message: ', message);
 });
 socket.on('connect', function () {
-  socket.emit('createMessage', {
-    from: 'jonas@example.com',
-    text: "yo man, I'll be right there."
-  });
+  console.log('Connected to server');
+
+//   socket.emit('createMessage', {
+//     from: 'jonas@example.com',
+//     text: "yo man, I'll be right there."
+//   })
+});
+
+socket.on('disconnect', function () {
+  console.log('server disconnected');
 });
 
 // for email app:
