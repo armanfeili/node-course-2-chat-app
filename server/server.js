@@ -20,14 +20,26 @@ io.on('connection', (socket) => {
   //   createdAt: 123
   // })
 
-  socket.on('createMessage', (message) => {
-    console.log('Message:', message);
-    io.emit('newMessage', {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
+  // socket.on('createMessage', (message) => {
+  // console.log('Message:', message)
+  socket.emit('newMessage', {
+    from: 'admin',
+    text: 'welcome...!',
+    createdAt: new Date().getTime()
   });
+
+  socket.broadcast.emit('newMessage', {
+    from: 'admin',
+    text: 'one user joined',
+    createdAt: new Date().getTime()
+  });
+
+// io.emit('newMessage', {
+//   from: message.from,
+//   text: message.text,
+//   createdAt: new Date().getTime()
+// })
+// })
 });
 
 // for email app:
@@ -46,6 +58,7 @@ io.on('connection', (socket) => {
 // })
 
 app.use(express.static(publicPath));
+
 const port = process.env.PORT || 3000;
 
 server.listen(port, () => {

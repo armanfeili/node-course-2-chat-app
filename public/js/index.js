@@ -2,11 +2,12 @@
 
 const socket = io();
 
-socket.on('newMessage', (message) => {
-  console.log('Message: ', message);
-});
 socket.on('connect', function () {
   console.log('Connected to server');
+
+  socket.on('newMessage', (message) => {
+    console.log('Message: ', message);
+  });
 
 //   socket.emit('createMessage', {
 //     from: 'jonas@example.com',
