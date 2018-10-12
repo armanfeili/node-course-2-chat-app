@@ -28,6 +28,7 @@ io.on('connection', (socket) => {
   socket.broadcast.emit('newMessage', generateMessage('Admin', 'one user joined'));
 
   socket.on('createMessage', (message) => {
+    console.log(message);
     io.emit('newMessage', generateMessage(message.from, message.text));
   });
   // socket.emit('newMessage', {
