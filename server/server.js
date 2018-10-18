@@ -11,6 +11,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+const {Users} = require('./utils/users');
+const users = new Users();
+
 // for chat app:
 
 io.on('connection', (socket) => {
@@ -24,24 +27,34 @@ io.on('connection', (socket) => {
 
   // socket.on('createMessage', (message) => {
   // console.log('Message:', message)
-  socket.emit('newMessage', generateMessage('Admin', 'Welcome!'));
-
-  socket.broadcast.emit('newMessage', generateMessage('Admin', 'one user joined'));
 
   socket.on('createMessage', (message, callback) => {
-    console.log(message);
-    io.emit('newMessage', generateMessage(message.from, message.text));
+    const user = users.getUser(socket.id);
+    if (user && isRealString(socket.id)) {
+      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+    }
     callback();
   });
 
   socket.on('createLocationMessage', function (coords) {
-    io.emit('newLocationMessage', generateLocationMessage('admin', coords.latitude, coords.longitude));
+    const user = users.getUser(socket.id);
+    if (user) {
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+    }
   });
 
   socket.on('join', (params, callback) => {
     if (!isRealString(params.name) || !isRealString(params.room)) {
-      callback('Name and room are required');
+      return callback('Name and room name are required.');
     }
+
+    socket.join(params.room);
+    users.removeUser(socket.id);
+    users.addUser(socket.id, params.name, params.room);
+
+    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
     callback();
   });
   // socket.emit('newMessage', {
@@ -56,12 +69,20 @@ io.on('connection', (socket) => {
   //   createdAt: new Date().getTime()
   // })
 
-// io.emit('newMessage', {
-//   from: message.from,
-//   text: message.text,
-//   createdAt: new Date().getTime()
-// })
-// })
+  // io.emit('newMessage', {
+  //   from: message.from,
+  //   text: message.text,
+  //   createdAt: new Date().getTime()
+  // })
+  // })
+  socket.on('disconnect', () => {
+    const user = users.removeUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+      io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left.`));
+    }
+  });
 });
 
 // for email app:
